@@ -22,18 +22,18 @@ defmodule Wechat do
     token_info.access_token
   end
 
+  def refresh_access_token do
+    now = DateTime.to_unix(DateTime.utc_now)
+    token_info = Map.merge(Wechat.AccessToken.token, %{refreshed_at: now})
+    File.write(config[:token_file], Poison.encode!(token_info))
+    token_info
+  end
+
   defp read_token_from_file do
     case File.read(config[:token_file]) do
       {:ok, binary} -> Poison.decode!(binary, keys: :atoms)
       {:error, _reason} -> refresh_access_token
     end
-  end
-
-  defp refresh_access_token do
-    now = DateTime.to_unix(DateTime.utc_now)
-    token_info = Map.merge(Wechat.AccessToken.token, %{refreshed_at: now})
-    File.write(config[:token_file], Poison.encode!(token_info))
-    token_info
   end
 
   defp access_token_expired?(token_info) do
